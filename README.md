@@ -5,7 +5,7 @@
 ## Project Description
 
 The project will implement financial ledeger app using android studio through java language.
-This is my first project in android studio environment.
+This is a first project in android studio environment.
 
 ## Visual
 ### 2023-11-04(Commit Login and Register Page)
