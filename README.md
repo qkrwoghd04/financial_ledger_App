@@ -15,7 +15,12 @@ This is a first project in android studio environment.
 #### Register Page
 <img width="352" alt="register page" src="https://github.com/qkrwoghd04/financial_ledger_App/assets/122519801/b12f024f-1cf5-412e-a209-1e2613708822">
 
+### 2023-11-05(Change the color of the login & registration pages, and also design the home page using Figma)
+<img width="200" height="450" alt="home page" src="https://github.com/qkrwoghd04/financial_ledger_App/assets/122519801/4cddbe71-8a7c-44e1-84f2-82f9f4b838de">
+<img width="200" height="450" alt="home page" src="https://github.com/qkrwoghd04/financial_ledger_App/assets/122519801/0b40284b-3d49-4d4f-a4b1-add75e4ab938">
+<img width="200" height="450" alt="home page" src="https://github.com/qkrwoghd04/financial_ledger_App/assets/122519801/be71acb4-66ef-4bde-a54e-0a40d7857f33">
+
 ## Installation
 
 ```bash
-npm install financial_le
+npm install financial_ledger_App
