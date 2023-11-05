@@ -94,20 +94,21 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-condensed"
         android:text="Balance Buddy"
-        android:textColor="@color/logo_color"
-        android:textSize="50sp"
+        android:textColor="@color/black"
+        android:textSize="45sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.651"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.072" />
+        app:layout_constraintVertical_bias="0.071" />
 
     <Button
         android:id="@+id/bt_reg"
         android:layout_width="241dp"
         android:layout_height="48dp"
         android:layout_marginBottom="92dp"
-        android:backgroundTint="@color/logo_color"
+        android:backgroundTint="@color/black"
         android:text="Register"
         app:layout_constraintBottom_toTopOf="@+id/tv_existinguser"
         app:layout_constraintEnd_toEndOf="parent"
@@ -130,7 +131,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-condensed"
         android:text="Registration"
-        android:textColor="@color/logo_color"
+        android:textColor="@color/black"
         android:textSize="34sp"
         app:layout_constraintBottom_toTopOf="@+id/et_reg_username"
         app:layout_constraintEnd_toEndOf="parent"
@@ -138,6 +139,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_appname"
         app:layout_constraintVertical_bias="0.421" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.082"
+        app:srcCompat="@drawable/ic_logo"
+        tools:layout_editor_absoluteX="53dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
