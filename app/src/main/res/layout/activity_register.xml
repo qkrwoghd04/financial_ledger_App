@@ -144,11 +144,12 @@
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.082"
-        app:srcCompat="@drawable/ic_logo"
-        tools:layout_editor_absoluteX="53dp" />
+        app:srcCompat="@drawable/ic_logo" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

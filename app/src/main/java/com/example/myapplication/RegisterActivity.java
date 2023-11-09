@@ -12,12 +12,14 @@ import android.widget.Toast;
 
 import com.example.myapplication.jsp.Database;
 
+import java.util.Date;
+
 public class RegisterActivity extends AppCompatActivity {
 
-    EditText et_username, et_email, et_password, et_confirm_pw;
-    Button bt_reg;
-
-    TextView tv_existingUser;
+    private EditText et_username, et_email, et_password, et_confirm_pw;
+    private Button bt_reg;
+    private TextView tv_existingUser;
+    private Database database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,14 +48,14 @@ public class RegisterActivity extends AppCompatActivity {
                 String email = et_email.getText().toString();
                 String password = et_password.getText().toString();
                 String confirm_pw = et_confirm_pw.getText().toString();
-                Database db = new Database(getApplicationContext(), "vitaScan", null, 1);
+                database = Database.getInstance(getApplicationContext());
 
                 if(username.length() == 0 || email.length() == 0 || password.length() == 0 || confirm_pw.length() == 0){
                     Toast.makeText(getApplicationContext(), "Please fill All details", Toast.LENGTH_SHORT).show();
                 }else{
                     if(password.compareTo(confirm_pw) == 0){
                         if(isValid(password)){
-                            db.register(username, email, password);
+                            database.register(username, email, password);
                             Toast.makeText(getApplicationContext(), "Record Inserted", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                         }else{

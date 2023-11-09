@@ -48,22 +48,15 @@ public class HomeActivity extends AppCompatActivity {
         MyMarkerView mv = new MyMarkerView(getApplicationContext(), R.layout.custom_marker_view);
         mv.setChartView(lineChart);
         lineChart.setMarker(mv);
-        // 이전 주 버튼 초기화
-        buttonPreviousWeek = (ImageButton) findViewById(R.id.bt_prev); // 실제 버튼 id에 따라 변경해야 할 수 있습니다.
-        // 다음 주 버튼 초기화
+        buttonPreviousWeek = (ImageButton) findViewById(R.id.bt_prev);
         buttonNextWeek = (ImageButton) findViewById(R.id.bt_next);
-
-        // 날짜 범위 표시를 위한 TextView 초기화
-        textViewDateRange = findViewById(R.id.textViewDateRange); // 실제 id가 무엇인지에 따라 변경해야 할 수 있습니다.
-
-        // 날짜 포맷터 초기화
+        textViewDateRange = findViewById(R.id.tv_calender);
         dateFormat = new SimpleDateFormat("MM-dd", Locale.getDefault());
 
-        // 현재 주의 시작과 끝을 설정
+        // set the start & end of a week
         currentWeekStart = Calendar.getInstance();
         currentWeekEnd = (Calendar) currentWeekStart.clone();
 
-        // 달력을 이번 주의 시작과 끝으로 설정
         currentWeekStart.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
         currentWeekEnd.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
 
@@ -78,7 +71,7 @@ public class HomeActivity extends AppCompatActivity {
         });
 
 
-        buttonNextWeek.setVisibility(View.GONE); // 초기 상태에서는 보이지 않게 설정
+        buttonNextWeek.setVisibility(View.GONE);
         buttonNextWeek.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,16 +87,15 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
-
     private void showAddEntryFragment() {
+        setContentView(R.layout.fragment_add_entry);
         AddEntryFragment addEntryFragment = new AddEntryFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, addEntryFragment); // Replace with your actual container ID
+        transaction.replace(R.id.fragment_container, addEntryFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
-    // 현재 날짜 범위를 TextView에 업데이트하는 메소드
     private void updateDateRange() {
         String startDate = dateFormat.format(currentWeekStart.getTime());
         String endDate = dateFormat.format(currentWeekEnd.getTime());
@@ -118,8 +110,6 @@ public class HomeActivity extends AppCompatActivity {
             buttonNextWeek.setVisibility(View.VISIBLE);
         }
     }
-
-
 
     private void showPreviousWeekData() {
         // 한 주를 뺀다
@@ -136,17 +126,13 @@ public class HomeActivity extends AppCompatActivity {
         buttonNextWeek.setVisibility(View.VISIBLE);
     }
 
-    // 다음 주 데이터를 로드하고 차트를 업데이트하는 메소드
     private void showNextWeekData() {
-        // 한 주를 더한다
+
         currentWeekStart.add(Calendar.WEEK_OF_YEAR, 1);
         currentWeekEnd.add(Calendar.WEEK_OF_YEAR, 1);
 
-        // 날짜 범위 업데이트
         updateDateRange();
 
-        // 다음 주 데이터 로드 및 차트 데이터 설정
-        // 실제로는 데이터베이스 또는 API에서 다음 주의 데이터를 가져오는 로직이 필요합니다.
         prepareChartData(createChartData(), lineChart);
     }
 

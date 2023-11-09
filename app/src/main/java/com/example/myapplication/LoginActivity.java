@@ -19,6 +19,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText et_password, et_username;
     Button bt_login;
     TextView tv_newuser;
+    private Database database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +36,11 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String username = et_username.getText().toString();
                 String password = et_password.getText().toString();
-                Database db = new Database(getApplicationContext(), "vitaScan", null, 1);
+                database = Database.getInstance(getApplicationContext());
                 if(username.length() == 0 || password.length() == 0){
                     Toast.makeText(getApplicationContext(), "Please fill All details", Toast.LENGTH_SHORT).show();
                 }else{
-                    if(db.login(username, password) == 1){
+                    if(database.login(username, password) == true){
                         Toast.makeText(getApplicationContext(), "Login Success", Toast.LENGTH_SHORT).show();
                         SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPreferences.edit();

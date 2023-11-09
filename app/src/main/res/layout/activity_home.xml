@@ -37,7 +37,7 @@
     </com.github.mikephil.charting.charts.LineChart>
 
     <TextView
-        android:id="@+id/textViewDateRange"
+        android:id="@+id/tv_calender"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
