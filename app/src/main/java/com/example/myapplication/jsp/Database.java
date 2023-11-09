@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.jsp;
 
 import android.content.ContentValues;
 import android.content.Context;

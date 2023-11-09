@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapplication.jsp.Database;
+
 public class RegisterActivity extends AppCompatActivity {
 
     EditText et_username, et_email, et_password, et_confirm_pw;
