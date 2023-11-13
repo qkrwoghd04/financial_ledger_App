@@ -23,4 +23,4 @@ This is a first project in android studio environment.
 ## Installation
 
 ```bash
-npm install financial_ledger_App
+git clone https://github.com/qkrwoghd04/financial_ledger_App.git
