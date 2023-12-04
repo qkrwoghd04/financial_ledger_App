@@ -4,97 +4,134 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#EFF0FC"
     tools:context=".LoginActivity">
 
-    <EditText
-        android:id="@+id/et_confirm_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:drawableLeft="@drawable/ic_baseline_pw"
-        android:drawablePadding="10dp"
-        android:ems="10"
-        android:hint="Password"
-        android:inputType="textPassword"
-        android:paddingLeft="20dp"
-        android:paddingTop="10dp"
-        android:paddingRight="10dp"
-        android:paddingBottom="10dp"
-        android:textColorHint="#000000"
-        app:layout_constraintBottom_toTopOf="@+id/bt_reg"
+    <ImageView
+        android:id="@+id/logo_balance_buddy"
+        android:layout_width="280dp"
+        android:layout_height="150dp"
+        android:layout_marginStart="93dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginEnd="93dp"
+        android:scaleType="fitXY"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_appname"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-condensed"
-        android:text="Balance Buddy"
-        android:textColor="#000000"
-        android:textSize="45sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.61"
+        app:layout_constraintHorizontal_bias="0.514"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.405" />
+        app:srcCompat="@drawable/logo" />
+
 
     <EditText
-        android:id="@+id/et_reg_email"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_baseline_user"
-        android:drawablePadding="10dp"
+        android:id="@+id/username"
+        android:layout_width="320dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="192dp"
+        android:background="@drawable/edittext_background"
+        android:drawableStart="@drawable/outline_person_24"
         android:ems="10"
         android:hint="Username"
         android:inputType="text"
+        android:drawablePadding="12dp"
         android:paddingLeft="20dp"
-        android:paddingTop="10dp"
+        android:paddingTop="5dp"
         android:paddingRight="10dp"
-        android:paddingBottom="10dp"
-        android:textColorHint="#000000"
-        app:layout_constraintBottom_toTopOf="@+id/et_confirm_password"
+        android:paddingBottom="5dp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.34"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logo_balance_buddy" />
+
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="320dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/edittext_background"
+        android:drawableStart="@drawable/outline_lock_24"
+        android:ems="10"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:drawablePadding="12dp"
+        android:paddingLeft="20dp"
+        android:paddingTop="5dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="5dp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.351"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/username" />
+
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="160dp"
+        android:layout_height="55dp"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="#247FB6"
+        android:text="Sign-In"
+        android:textAllCaps="false"
+        app:cornerRadius="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_appname"
-        app:layout_constraintVertical_bias="0.969" />
-
-    <Button
-        android:id="@+id/bt_reg"
-        android:layout_width="210dp"
-        android:layout_height="44dp"
-        android:layout_marginBottom="32dp"
-        android:backgroundTint="@color/black"
-        android:text="Login"
-        app:layout_constraintBottom_toBottomOf="@+id/tv_newuser"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/password" />
 
     <TextView
-        android:id="@+id/tv_newuser"
+        android:id="@+id/welcome_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="28dp"
-        android:text="Register for New User"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="70dp"
+        android:text="Welcome back"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="#053B5C"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logo_balance_buddy" />
+
+    <TextView
+        android:id="@+id/login_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Kindly login to continue"
+        android:textColor="#A0A1A4"
+        android:textSize="18dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.155"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/welcome_back" />
+
+    <TextView
+        android:id="@+id/new_user_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="48dp"
+        android:text="Don't have an account? Sign Up Here"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_button"
+        app:layout_constraintVertical_bias="1.0" />
 
     <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/iv_back"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintBottom_toTopOf="@+id/logo_balance_buddy"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.408"
-        app:srcCompat="@drawable/ic_logo" />
-
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/outline_arrow_back_24" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

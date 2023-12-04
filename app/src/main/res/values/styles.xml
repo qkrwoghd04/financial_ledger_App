@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="MyCustomButtonStyle">
-        <!-- 기타 스타일 속성 -->
-        <item name="android:background">@color/logo_color</item> <!-- 새로운 색상 지정 -->
-    </style>
-
-</resources>

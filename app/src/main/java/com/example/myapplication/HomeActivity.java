@@ -1,201 +1,228 @@
 package com.example.myapplication;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
-
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+
+import com.example.myapplication.fragment.AccountFragment;
+import com.example.myapplication.fragment.HomeFragment;
+import com.example.myapplication.fragment.StatisticFragment;
+import com.example.myapplication.fragment.GoalsFragment; // GoalsFragment를 import 해야 합니다.
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
+import android.app.Dialog;
+import android.widget.Button;
+import android.widget.CalendarView;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
-import com.example.myapplication.fragment.AddEntryFragment;
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Locale;
+import java.io.FileInputStream;
 
 public class HomeActivity extends AppCompatActivity {
-
-    //선 그래프
-    private LineChart lineChart;
-    private TextView textViewDateRange;
-    private Calendar currentWeekStart;
-    private Calendar currentWeekEnd;
-    private SimpleDateFormat dateFormat;
-    private ImageButton buttonPreviousWeek;
-    private ImageButton buttonNextWeek;
-    private ImageButton btAdd;
+    public String readDay = null;
+    public String str = null;
+    public CalendarView calendarView;
+    public TextView diaryTextView, textView2, textView3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        calendarView = findViewById(R.id.calendarView);
+        diaryTextView = findViewById(R.id.diaryTextView);
+        textView2 = findViewById(R.id.textView2);
+        textView3 = findViewById(R.id.textView3);
 
-        btAdd = findViewById(R.id.bt_add);
-        lineChart = (LineChart) findViewById(R.id.chart);
-        configureChartAppearance(lineChart);
-        prepareChartData(createChartData(),lineChart);
-        MyMarkerView mv = new MyMarkerView(getApplicationContext(), R.layout.custom_marker_view);
-        mv.setChartView(lineChart);
-        lineChart.setMarker(mv);
-        buttonPreviousWeek = (ImageButton) findViewById(R.id.bt_prev);
-        buttonNextWeek = (ImageButton) findViewById(R.id.bt_next);
-        textViewDateRange = findViewById(R.id.tv_calender);
-        dateFormat = new SimpleDateFormat("MM-dd", Locale.getDefault());
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        bottomNav.setOnNavigationItemSelectedListener(navListener);
 
-        // set the start & end of a week
-        currentWeekStart = Calendar.getInstance();
-        currentWeekEnd = (Calendar) currentWeekStart.clone();
-
-        currentWeekStart.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-        currentWeekEnd.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
-
-        updateDateRange();
-
-
-        buttonPreviousWeek.setOnClickListener(new View.OnClickListener() {
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener()
+        {
             @Override
-            public void onClick(View v) {
-                showPreviousWeekData();
+            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth)
+            {
+                diaryTextView.setVisibility(View.VISIBLE);
+                textView2.setVisibility(View.INVISIBLE);
+                diaryTextView.setText(String.format("%d / %d / %d", year, month + 1, dayOfMonth));
+//                checkDay(year, month, dayOfMonth);
             }
         });
 
 
-        buttonNextWeek.setVisibility(View.GONE);
-        buttonNextWeek.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showNextWeekData();
-            }
-        });
-        btAdd.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showAddEntryFragment();
+                showDialog();
             }
         });
 
-    }
-
-    private void showAddEntryFragment() {
-        setContentView(R.layout.fragment_add_entry);
-        AddEntryFragment addEntryFragment = new AddEntryFragment();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, addEntryFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-
-    private void updateDateRange() {
-        String startDate = dateFormat.format(currentWeekStart.getTime());
-        String endDate = dateFormat.format(currentWeekEnd.getTime());
-        textViewDateRange.setText(String.format("%s ~ %s", startDate, endDate));
-
-        // 현재 날짜가 현재 주를 넘지 않는 경우 다음 주 버튼 숨기기
-        Calendar today = Calendar.getInstance();
-        if (today.get(Calendar.YEAR) == currentWeekStart.get(Calendar.YEAR) &&
-                today.get(Calendar.WEEK_OF_YEAR) == currentWeekStart.get(Calendar.WEEK_OF_YEAR)) {
-            buttonNextWeek.setVisibility(View.GONE);
-        } else {
-            buttonNextWeek.setVisibility(View.VISIBLE);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
         }
     }
 
-    private void showPreviousWeekData() {
-        // 한 주를 뺀다
-        currentWeekStart.add(Calendar.WEEK_OF_YEAR, -1);
-        currentWeekEnd.add(Calendar.WEEK_OF_YEAR, -1);
+    private BottomNavigationView.OnNavigationItemSelectedListener navListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            Fragment selectedFragment = null;
 
-        // update
-        updateDateRange();
+            if (item.getItemId() == R.id.home) {
+                selectedFragment = new HomeFragment();
+            } else if (item.getItemId() == R.id.statistic) {
+                selectedFragment = new StatisticFragment();
+            } else if (item.getItemId() == R.id.goals) {
+                selectedFragment = new GoalsFragment();
+            } else if (item.getItemId() == R.id.account_info){
+                selectedFragment = new AccountFragment();
+            }
 
-        // 이전 주 데이터 로드 및 차트 데이터 설정
-        prepareChartData(createChartData(), lineChart);
 
-        // 버튼 상태 갱신
-        buttonNextWeek.setVisibility(View.VISIBLE);
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
+            }
+
+            return true;
+        }
+    };
+
+    private void showDialog() {
+        Dialog dialog = new Dialog(this, android.R.style.Theme_Material_Light_Dialog_NoActionBar_MinWidth);
+        dialog.setContentView(R.layout.dialog_layout);
+
+        // 대화창 내의 컴포넌트 참조
+        EditText editTextDescription = dialog.findViewById(R.id.editTextDescription);
+        EditText editTextAmount = dialog.findViewById(R.id.editTextAmount);
+        RadioButton radioIncome = dialog.findViewById(R.id.radioIncome);
+        RadioButton radioExpense = dialog.findViewById(R.id.radioExpense);
+        Button buttonAdd = dialog.findViewById(R.id.bt_Add);
+
+        // "추가" 버튼 클릭 이벤트 처리
+        buttonAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String type = radioIncome.isChecked() ? "Income" : "Expense";
+                String description = editTextDescription.getText().toString();
+                String amount = editTextAmount.getText().toString();
+
+                String data = type + ": " + description + ", Amount: " + amount;
+                textView2.setText(data);  // HomeActivity의 TextView에 데이터 표시
+                textView2.setVisibility(View.VISIBLE);
+
+                dialog.dismiss();  // 대화창 닫기
+            }
+        });
+
+        dialog.show();
     }
 
-    private void showNextWeekData() {
+//    public void checkDay(int cYear, int cMonth, int cDay)
+//    {
+//        readDay = "" + cYear + "-" + (cMonth + 1) + "" + "-" + cDay + ".txt";
+//        FileInputStream fis;
+//
+//        try
+//        {
+//            fis = openFileInput(readDay);
+//
+//            byte[] fileData = new byte[fis.available()];
+//            fis.read(fileData);
+//            fis.close();
+//
+//            str = new String(fileData);
+//
+//            contextEditText.setVisibility(View.INVISIBLE);
+//            textView2.setVisibility(View.VISIBLE);
+//            textView2.setText(str);
+//
+//            save_Btn.setVisibility(View.INVISIBLE);
+//            cha_Btn.setVisibility(View.VISIBLE);
+//            del_Btn.setVisibility(View.VISIBLE);
+//
+//            cha_Btn.setOnClickListener(new View.OnClickListener()
+//            {
+//                @Override
+//                public void onClick(View view)
+//                {
+//                    contextEditText.setVisibility(View.VISIBLE);
+//                    textView2.setVisibility(View.INVISIBLE);
+//                    contextEditText.setText(str);
+//
+//                    save_Btn.setVisibility(View.VISIBLE);
+//                    cha_Btn.setVisibility(View.INVISIBLE);
+//                    del_Btn.setVisibility(View.INVISIBLE);
+//                    textView2.setText(contextEditText.getText());
+//                }
+//
+//            });
+//            del_Btn.setOnClickListener(new View.OnClickListener()
+//            {
+//                @Override
+//                public void onClick(View view)
+//                {
+//                    textView2.setVisibility(View.INVISIBLE);
+//                    contextEditText.setText("");
+//                    contextEditText.setVisibility(View.VISIBLE);
+//                    save_Btn.setVisibility(View.VISIBLE);
+//                    cha_Btn.setVisibility(View.INVISIBLE);
+//                    del_Btn.setVisibility(View.INVISIBLE);
+////                    removeDiary(readDay);
+//                }
+//            });
+//            if (textView2.getText() == null)
+//            {
+//                textView2.setVisibility(View.INVISIBLE);
+//                diaryTextView.setVisibility(View.VISIBLE);
+//                save_Btn.setVisibility(View.VISIBLE);
+//                cha_Btn.setVisibility(View.INVISIBLE);
+//                del_Btn.setVisibility(View.INVISIBLE);
+//                contextEditText.setVisibility(View.VISIBLE);
+//            }
+//
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
 
-        currentWeekStart.add(Calendar.WEEK_OF_YEAR, 1);
-        currentWeekEnd.add(Calendar.WEEK_OF_YEAR, 1);
-
-        updateDateRange();
-
-        prepareChartData(createChartData(), lineChart);
-    }
-
-    private void configureChartAppearance(LineChart lineChart){
-        // x axis design
-        // Customization for X-axis
-        XAxis xAxis = lineChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false); // No grid lines
-        xAxis.setDrawAxisLine(false); // No axis line
-        xAxis.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD)); // Bold labels
-        xAxis.setSpaceMin(0.3f);
-        xAxis.setSpaceMax(0.3f);
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(new String[]{"S", "M", "T", "W", "T", "F", "S"}));
-
-        // y axis design
-        YAxis yAxisLeft = lineChart.getAxisLeft();
-        yAxisLeft.setDrawGridLines(false); // Keep the grid lines
-        yAxisLeft.enableAxisLineDashedLine(10f, 10f, 0f);
-        yAxisLeft.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD)); // Bold labels
-        yAxisLeft.setGranularity(20f); // Set interval to 20
-        yAxisLeft.setAxisMinimum(0f); // Set the minimum value
-        yAxisLeft.setSpaceMin(0.3f);
-
-        YAxis yAxisRight = lineChart.getAxisRight();
-        yAxisRight.setEnabled(false);
-    }
-    private LineData createChartData(){
-        ArrayList<Entry> entry_chart1 = new ArrayList<>();
-
-        LineData chartData = new LineData(); // The data in the line chart
-
-        // Sunday to Saturday
-        entry_chart1.add(new Entry(0, 98));
-        entry_chart1.add(new Entry(1, 21));
-        entry_chart1.add(new Entry(2, 86));
-        entry_chart1.add(new Entry(3, 122));
-        entry_chart1.add(new Entry(4, 8));
-        entry_chart1.add(new Entry(5, 46));
-        entry_chart1.add(new Entry(6, 41));
-
-        LineDataSet lineDataSet1 = new LineDataSet(entry_chart1, "This Week"); // Arraylist convert to LineDataSet
-//        LineDataSet lineDataSet2 = new LineDataSet(entry_chart2, "Last Week");
-
-        lineDataSet1.setColor(Color.BLACK);
-//        lineDataSet2.setColor(Color.BLUE);
-        lineDataSet1.setDrawValues(false);
-
-        lineDataSet1.setLineWidth(3.5f);
-//        lineDataSet2.setLineWidth(2.5f);
-
-        chartData.addDataSet(lineDataSet1); // LineDataSet add in chartData
-//        chartData.addDataSet(lineDataSet2);
-
-        lineChart.setTouchEnabled(true); // chart touch disable
-        lineChart.getDescription().setEnabled(false); // description text deactivated
-        lineChart.getLegend().setEnabled(true); // legend deactivate
-
-        return chartData;
-    }
-
-    private void prepareChartData(LineData data, LineChart lineChart){
-        lineChart.setData(data);
-        lineChart.invalidate();
-    }
+//    @SuppressLint("WrongConstant")
+//    public void removeDiary(String readDay)
+//    {
+//        FileOutputStream fos;
+//        try
+//        {
+//            fos = openFileOutput(readDay, MODE_NO_LOCALIZED_COLLATORS);
+//            String content = "";
+//            fos.write((content).getBytes());
+//            fos.close();
+//
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    @SuppressLint("WrongConstant")
+//    public void saveDiary(String readDay)
+//    {
+//        FileOutputStream fos;
+//        try
+//        {
+//            fos = openFileOutput(readDay, MODE_NO_LOCALIZED_COLLATORS);
+//            String content = contextEditText.getText().toString();
+//            fos.write((content).getBytes());
+//            fos.close();
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
 }

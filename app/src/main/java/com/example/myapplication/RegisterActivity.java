@@ -1,99 +1,107 @@
 package com.example.myapplication;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.myapplication.jsp.Database;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.Date;
+import com.example.myapplication.jsp.DatabaseHelper;
 
 public class RegisterActivity extends AppCompatActivity {
+    EditText et_username, et_password, et_email, et_confirmation_password;
 
-    private EditText et_username, et_email, et_password, et_confirm_pw;
-    private Button bt_reg;
-    private TextView tv_existingUser;
-    private Database database;
+    Button btn_register;
+
+    TextView btn_goto_login;
+
+    DatabaseHelper databaseHelper;
+
+    ImageView iv_back;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        et_username = findViewById(R.id.username);
+        et_email = findViewById(R.id.email_address);
+        et_password = findViewById(R.id.password);
+        et_confirmation_password = findViewById(R.id.confirmation_password);
+        btn_register = findViewById(R.id.register_button);
+        btn_goto_login = findViewById(R.id.login_page_button);
+        iv_back = findViewById(R.id.iv_back); // ImageView 초기화 추가
 
-        et_username = findViewById(R.id.et_reg_username);
-        et_email = findViewById(R.id.et_reg_email);
-        et_password = findViewById(R.id.et_reg_password);
-        et_confirm_pw = findViewById(R.id.et_confirm_password);
-        bt_reg = findViewById(R.id.bt_reg);
-        tv_existingUser = findViewById(R.id.tv_existinguser);
+        databaseHelper = new DatabaseHelper(this);
 
-        //show the register activity when the user does not have an account
-        tv_existingUser.setOnClickListener(new View.OnClickListener(){
+        btn_goto_login.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
             }
         });
 
-        bt_reg.setOnClickListener(new View.OnClickListener() {
+        iv_back.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        btn_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String username = et_username.getText().toString();
                 String email = et_email.getText().toString();
                 String password = et_password.getText().toString();
-                String confirm_pw = et_confirm_pw.getText().toString();
-                database = Database.getInstance(getApplicationContext());
+                String conf_password = et_confirmation_password.getText().toString();
 
-                if(username.length() == 0 || email.length() == 0 || password.length() == 0 || confirm_pw.length() == 0){
-                    Toast.makeText(getApplicationContext(), "Please fill All details", Toast.LENGTH_SHORT).show();
-                }else{
-                    if(password.compareTo(confirm_pw) == 0){
-                        if(isValid(password)){
-                            database.register(username, email, password);
-                            Toast.makeText(getApplicationContext(), "Record Inserted", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-                        }else{
-                            Toast.makeText(getApplicationContext(), "Password must contain at least 8 characters, having letter,digit and special symbol", Toast.LENGTH_SHORT).show();
-                        }
-                    }else{
-                        Toast.makeText(getApplicationContext(), "Password and Confirm password didn't match", Toast.LENGTH_SHORT).show();
+                if (username.isEmpty() || email.isEmpty() || password.isEmpty() || conf_password.isEmpty()){
+                    Toast.makeText(RegisterActivity.this, "Please fill all details", Toast.LENGTH_LONG).show();
+                } else if (!password.equals(conf_password)) {
+                    Toast.makeText(RegisterActivity.this, "Password do not match", Toast.LENGTH_LONG).show();
+                } else if (!isValidPassword(password)) {
+                    Toast.makeText(RegisterActivity.this, "Invalid password format", Toast.LENGTH_LONG).show();
+                } else if (databaseHelper.checkUsername(username)) {
+                    Toast.makeText(RegisterActivity.this, "User Already Exists", Toast.LENGTH_LONG).show();
+                } else {
+                    boolean registeredSuccess = databaseHelper.insertData(username, email, password);
+                    if (registeredSuccess){
+                        Toast.makeText(RegisterActivity.this, "User Registered Successfully", Toast.LENGTH_LONG).show();
+                        // 등록 성공 후 LoginActivity로 화면 전환
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish(); // 현재 액티비티 종료
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "Registration failed, try again", Toast.LENGTH_LONG).show();
                     }
                 }
             }
         });
+
     }
-    public static boolean isValid(String pw){
-        int f1=0, f2=0, f3=3;
-        if(pw.length() < 8 || pw.length() > 20){
-            return false;
-        }else{
-            for(int p = 0; p < pw.length(); p++){
-                if(Character.isLetter(pw.charAt(p))){
-                    f1=1;
-                }
-            }
-            for(int r = 0; r < pw.length(); r++){
-                if(Character.isDigit(pw.charAt(r))){
-                    f2=1;
-                }
-            }
-            // 특수 문자
-            for(int s = 0; s < pw.length(); s++){
-                char c = pw.charAt(s);
-                if(c>=33 && c<=46 || c==64){
-                    f3=1;
-                }
+
+    public static boolean isValidPassword(String password) {
+        int hasLetter = 0, hasDigit = 0, hasSpecialChar = 0;
+
+        if (password.length() < 8) {
+            return false; // Password length should be at least 8 characters
+        } else {
+            for (int i = 0; i < password.length(); i++) {
+                char c = password.charAt(i);
+                if (Character.isLetter(c)) hasLetter = 1;
+                if (Character.isDigit(c)) hasDigit = 1;
+                if ((c >= 33 && c <= 46) || c == 64) hasSpecialChar = 1;
             }
         }
-        if(f1==1 && f2==1 && f2==1){
-            return true;
-        }
-        return false;
+
+        return hasLetter == 1 && hasDigit == 1 && hasSpecialChar == 1;
     }
 }
