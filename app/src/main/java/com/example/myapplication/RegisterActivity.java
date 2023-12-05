@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -58,6 +59,7 @@ public class RegisterActivity extends AppCompatActivity {
         btn_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.d("RegisterActivity", "Button clicked");
                 String username = et_username.getText().toString();
                 String email = et_email.getText().toString();
                 String password = et_password.getText().toString();
@@ -76,11 +78,11 @@ public class RegisterActivity extends AppCompatActivity {
                     if (registeredSuccess){
                         Toast.makeText(RegisterActivity.this, "User Registered Successfully", Toast.LENGTH_LONG).show();
                         // 등록 성공 후 LoginActivity로 화면 전환
-                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                         startActivity(intent);
                         finish(); // 현재 액티비티 종료
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Registration failed, try again", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Registration failed, try again", Toast.LENGTH_LONG).show();
                     }
                 }
             }

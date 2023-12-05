@@ -1,16 +1,22 @@
 package com.example.myapplication;
 
+import android.content.SharedPreferences;
+import android.util.Log; // 로그를 위한 임포트
+import android.database.Cursor;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myapplication.adapter.TransactionAdapter;
 import com.example.myapplication.fragment.AccountFragment;
 import com.example.myapplication.fragment.HomeFragment;
 import com.example.myapplication.fragment.StatisticFragment;
 import com.example.myapplication.fragment.GoalsFragment; // GoalsFragment를 import 해야 합니다.
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.example.myapplication.jsp.DatabaseHelper;
 
 import android.view.MenuItem;
 import android.view.View;
@@ -20,14 +26,26 @@ import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class HomeActivity extends AppCompatActivity {
-    public String readDay = null;
-    public String str = null;
     public CalendarView calendarView;
-    public TextView diaryTextView, textView2, textView3;
+    public TextView diaryTextView, textView3;
+    private RecyclerView recyclerView;
+    private TransactionAdapter adapter;
+    private List<Transaction> transactionList;
+    private DatabaseHelper databaseHelper;
+    private Map<String, List<Transaction>> transactionsCache = new HashMap<>();
+    private Map<String, Long> lastLoadTime = new HashMap<>();
+    private final long CACHE_VALID_DURATION = TimeUnit.MINUTES.toMillis(30);
+    private String currentSelectedDate = ""; // 현재 선택된 날짜를 저장하는 변수
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,21 +53,23 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         calendarView = findViewById(R.id.calendarView);
         diaryTextView = findViewById(R.id.diaryTextView);
-        textView2 = findViewById(R.id.textView2);
         textView3 = findViewById(R.id.textView3);
+
+        recyclerView = findViewById(R.id.recyclerView);
+        transactionList = new ArrayList<>();
+        adapter = new TransactionAdapter(transactionList);
+        recyclerView.setAdapter(adapter);
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
+        databaseHelper = new DatabaseHelper(this);
+        loadUserTransactions();
 
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener()
-        {
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
-            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth)
-            {
-                diaryTextView.setVisibility(View.VISIBLE);
-                textView2.setVisibility(View.INVISIBLE);
-                diaryTextView.setText(String.format("%d / %d / %d", year, month + 1, dayOfMonth));
-//                checkDay(year, month, dayOfMonth);
+            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
+                currentSelectedDate = String.format("%d/%d/%d", year, month + 1, dayOfMonth);
+                loadTransactionsForDate(currentSelectedDate);
             }
         });
 
@@ -106,123 +126,167 @@ public class HomeActivity extends AppCompatActivity {
         buttonAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String type = radioIncome.isChecked() ? "Income" : "Expense";
-                String description = editTextDescription.getText().toString();
-                String amount = editTextAmount.getText().toString();
+                try {
+                    String type = radioIncome.isChecked() ? "Income" : "Expense";
+                    String description = editTextDescription.getText().toString();
+                    String amountStr = editTextAmount.getText().toString().trim();
+                    if (description.isEmpty() || amountStr.isEmpty()) {
+                        Toast.makeText(HomeActivity.this, "Description and amount are required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    double amount = Double.parseDouble(amountStr);
 
-                String data = type + ": " + description + ", Amount: " + amount;
-                textView2.setText(data);  // HomeActivity의 TextView에 데이터 표시
-                textView2.setVisibility(View.VISIBLE);
+                    // 현재 선택된 날짜를 가져오기
+                    long selectedDateMillis = calendarView.getDate();
+                    Log.d("" + selectedDateMillis, "View Date");
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(selectedDateMillis);
+                    String selectedDate = currentSelectedDate;
+                    Log.d(selectedDate, "selected Date");
 
-                dialog.dismiss();  // 대화창 닫기
+
+                    // 로그인한 사용자의 이름 가져오기
+                    String loggedInUsername = getLoggedInUsername();
+
+                    // 데이터베이스에 트랜잭션 저장
+                    boolean isInserted = databaseHelper.insertTransaction(
+                            selectedDate,
+                            type,
+                            description,
+                            amount,
+                            loggedInUsername // 현재 로그인한 사용자 이름
+                    );
+
+                    if (isInserted) {
+                        Transaction newTransaction = new Transaction(type, description, String.valueOf(amount), selectedDate);
+                        transactionList.add(newTransaction);
+                        updateCacheWithNewTransaction(selectedDate, newTransaction); // 선택한 날짜로 캐시 업데이트
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(HomeActivity.this, "Transaction added successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(HomeActivity.this, "Failed to add transaction", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(HomeActivity.this, "Invalid amount", Toast.LENGTH_SHORT).show();
+                }
+
+                dialog.dismiss();
             }
         });
+
 
         dialog.show();
     }
 
-//    public void checkDay(int cYear, int cMonth, int cDay)
-//    {
-//        readDay = "" + cYear + "-" + (cMonth + 1) + "" + "-" + cDay + ".txt";
-//        FileInputStream fis;
-//
-//        try
-//        {
-//            fis = openFileInput(readDay);
-//
-//            byte[] fileData = new byte[fis.available()];
-//            fis.read(fileData);
-//            fis.close();
-//
-//            str = new String(fileData);
-//
-//            contextEditText.setVisibility(View.INVISIBLE);
-//            textView2.setVisibility(View.VISIBLE);
-//            textView2.setText(str);
-//
-//            save_Btn.setVisibility(View.INVISIBLE);
-//            cha_Btn.setVisibility(View.VISIBLE);
-//            del_Btn.setVisibility(View.VISIBLE);
-//
-//            cha_Btn.setOnClickListener(new View.OnClickListener()
-//            {
-//                @Override
-//                public void onClick(View view)
-//                {
-//                    contextEditText.setVisibility(View.VISIBLE);
-//                    textView2.setVisibility(View.INVISIBLE);
-//                    contextEditText.setText(str);
-//
-//                    save_Btn.setVisibility(View.VISIBLE);
-//                    cha_Btn.setVisibility(View.INVISIBLE);
-//                    del_Btn.setVisibility(View.INVISIBLE);
-//                    textView2.setText(contextEditText.getText());
-//                }
-//
-//            });
-//            del_Btn.setOnClickListener(new View.OnClickListener()
-//            {
-//                @Override
-//                public void onClick(View view)
-//                {
-//                    textView2.setVisibility(View.INVISIBLE);
-//                    contextEditText.setText("");
-//                    contextEditText.setVisibility(View.VISIBLE);
-//                    save_Btn.setVisibility(View.VISIBLE);
-//                    cha_Btn.setVisibility(View.INVISIBLE);
-//                    del_Btn.setVisibility(View.INVISIBLE);
-////                    removeDiary(readDay);
-//                }
-//            });
-//            if (textView2.getText() == null)
-//            {
-//                textView2.setVisibility(View.INVISIBLE);
-//                diaryTextView.setVisibility(View.VISIBLE);
-//                save_Btn.setVisibility(View.VISIBLE);
-//                cha_Btn.setVisibility(View.INVISIBLE);
-//                del_Btn.setVisibility(View.INVISIBLE);
-//                contextEditText.setVisibility(View.VISIBLE);
-//            }
-//
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+    private void loadTransactionsForDate(String date) {
+        Log.d("HomeActivity", "Loading transactions for date: " + date);
+        if (transactionsCache.containsKey(date)) {
+            Log.d("HomeActivity", "Loading from cache");
+            transactionList.clear();
+            transactionList.addAll(transactionsCache.get(date));
+            adapter.notifyDataSetChanged();
+        } else {
+            Log.d("HomeActivity", "Loading from database");
+            loadTransactionsFromDatabase(date);
+        }
+    }
 
-//    @SuppressLint("WrongConstant")
-//    public void removeDiary(String readDay)
-//    {
-//        FileOutputStream fos;
-//        try
-//        {
-//            fos = openFileOutput(readDay, MODE_NO_LOCALIZED_COLLATORS);
-//            String content = "";
-//            fos.write((content).getBytes());
-//            fos.close();
-//
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    @SuppressLint("WrongConstant")
-//    public void saveDiary(String readDay)
-//    {
-//        FileOutputStream fos;
-//        try
-//        {
-//            fos = openFileOutput(readDay, MODE_NO_LOCALIZED_COLLATORS);
-//            String content = contextEditText.getText().toString();
-//            fos.write((content).getBytes());
-//            fos.close();
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+
+
+    private void loadTransactionsFromDatabase(String date) {
+        Log.d("HomeActivity", "Querying database for transactions on date: " + date);
+        Cursor cursor = databaseHelper.getTransactionsByDate(date, getLoggedInUsername());
+
+        List<Transaction> transactionsForDate = new ArrayList<>();
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                int typeIndex = cursor.getColumnIndex("type");
+                int descriptionIndex = cursor.getColumnIndex("description");
+                int amountIndex = cursor.getColumnIndex("amount");
+                int dateIndex = cursor.getColumnIndex("date"); // 날짜 인덱스 추가
+
+                if (typeIndex != -1 && descriptionIndex != -1 && amountIndex != -1 && dateIndex != -1) {
+                    String type = cursor.getString(typeIndex);
+                    String description = cursor.getString(descriptionIndex);
+                    String amount = cursor.getString(amountIndex);
+                    String transactionDate = cursor.getString(dateIndex); // 날짜 정보 가져오기
+
+                    transactionsForDate.add(new Transaction(type, description, amount, transactionDate));
+                    Log.d("HomeActivity", "Transaction loaded: Type=" + type + ", Description=" + description + ", Amount=" + amount + ", Date=" + transactionDate); // 로그 업데이트
+                }
+            }
+            cursor.close();
+        }
+
+        transactionsCache.put(date, transactionsForDate);
+        transactionList.clear();
+        transactionList.addAll(transactionsForDate);
+        adapter.notifyDataSetChanged();
+        Log.d("HomeActivity", "Database load complete, transactions size: " + transactionsForDate.size()); // 로딩 완료 로그 추가
+        lastLoadTime.put(date, System.currentTimeMillis());
+    }
+
+
+
+    private void updateCacheWithNewTransaction(String date, Transaction transaction) {
+        List<Transaction> transactionsForDate = transactionsCache.get(date);
+        if (transactionsForDate == null) {
+            transactionsForDate = new ArrayList<>();
+            transactionsCache.put(date, transactionsForDate);
+        }
+        transactionsForDate.add(transaction);
+    }
+
+    private boolean isCacheInvalid(String date) {
+        Long lastLoaded = lastLoadTime.get(date);
+        if (lastLoaded == null) {
+            // 캐시된 데이터가 없으므로 유효하지 않음
+            return true;
+        }
+        long currentTime = System.currentTimeMillis();
+        return (currentTime - lastLoaded) > CACHE_VALID_DURATION;
+    }
+
+    private void loadUserTransactions() {
+        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
+        String username = sharedPreferences.getString("username", "");
+
+        if (!username.isEmpty()) {
+            new FetchTransactionsTask(databaseHelper, transactions -> {
+                transactionList.clear();
+                transactionList.addAll(transactions);
+                adapter.notifyDataSetChanged();
+            }).execute(username);
+        }
+    }
+
+
+    private List<Transaction> getTransactionsForUser(String username) {
+        List<Transaction> transactions = new ArrayList<>();
+        Cursor cursor = databaseHelper.getTransactionsByUsername(username);
+
+        if (cursor != null) {
+            int typeIndex = cursor.getColumnIndex("type");
+            int descriptionIndex = cursor.getColumnIndex("description");
+            int amountIndex = cursor.getColumnIndex("amount");
+            int dateIndex = cursor.getColumnIndex("date");
+
+            while (cursor.moveToNext()) {
+                String type = (typeIndex != -1) ? cursor.getString(typeIndex) : "";
+                String description = (descriptionIndex != -1) ? cursor.getString(descriptionIndex) : "";
+                String amount = (amountIndex != -1) ? cursor.getString(amountIndex) : "";
+                String date = (dateIndex != -1) ? cursor.getString(dateIndex) : "";
+
+                Transaction transaction = new Transaction(type, description, amount, date);
+                transactions.add(transaction);
+            }
+            cursor.close();
+        }
+
+        return transactions;
+    }
+    private String getLoggedInUsername() {
+        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
+        return sharedPreferences.getString("username", null);
+    }
 }

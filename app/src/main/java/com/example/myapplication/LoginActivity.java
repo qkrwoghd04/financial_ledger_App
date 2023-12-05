@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,11 +18,11 @@ import com.example.myapplication.fragment.HomeFragment;
 import com.example.myapplication.jsp.DatabaseHelper;
 
 public class LoginActivity extends AppCompatActivity {
+    private ProgressDialog progressDialog;
     DatabaseHelper databaseHelper;
     EditText et_username, et_password;
     Button login_button;
     TextView new_user_button;
-
     ImageView iv_back;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,29 +36,41 @@ public class LoginActivity extends AppCompatActivity {
         databaseHelper = new DatabaseHelper(this);
         iv_back = findViewById(R.id.iv_back);
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Logging in...");
+        progressDialog.setCancelable(false);
+
+//        if (!getLoggedInUsername().isEmpty()) {
+//            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+//            finish();
+//            return;
+//        }
+
         login_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String username = et_username.getText().toString();
                 String password = et_password.getText().toString();
-                boolean isLoggedId = databaseHelper.checkUser(username, password);
-                if(username.length() == 0 || password.length() == 0){
+
+                if(username.isEmpty() || password.isEmpty()){
                     Toast.makeText(getApplicationContext(), "Please fill All details", Toast.LENGTH_SHORT).show();
-                }else{
-                    if(isLoggedId){
-                        Toast.makeText(getApplicationContext(), "Login Success", Toast.LENGTH_SHORT).show();
-                        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("username", username);
-                        editor.apply();
-                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                    }else{
-                        Toast.makeText(getApplicationContext(), "Invaild Username and Password", Toast.LENGTH_SHORT).show();
-                    }
+                    return;
                 }
-                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                progressDialog.show();
+                boolean isLoggedId = databaseHelper.checkUser(username, password);
+                if(isLoggedId){
+                    saveLoginSession(username);
+                    progressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(), "Login Success", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                    finish();
+                } else {
+                    progressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(), "Invalid Username and Password", Toast.LENGTH_SHORT).show();
+                }
             }
         });
+
 
         iv_back.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -78,5 +91,22 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+    private void dismissProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    private void saveLoginSession(String username) {
+        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("username", username);
+        editor.apply();
+    }
+
+//    private String getLoggedInUsername() {
+//        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
+//        return sharedPreferences.getString("username", null);
+//    }
 
 }
