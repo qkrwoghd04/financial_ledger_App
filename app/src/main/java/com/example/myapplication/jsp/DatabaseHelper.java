@@ -67,7 +67,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Boolean insertTransaction(String date, String type, String description, Double amount, String username) {
+    public long insertTransaction(String date, String type, String description, Double amount, String username) {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("date", date);
@@ -75,10 +75,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put("description", description);
         cv.put("amount", amount);
         cv.put("username", username);
-        long result = sqLiteDatabase.insert("transactions", null, cv);
-
-        return result != -1;
+        return sqLiteDatabase.insert("transactions", null, cv);
     }
+
     public Cursor getTransactionsByDate(String date, String username) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.rawQuery("Select * from transactions where date = ? and username = ?", new String[] {date, username});
@@ -88,7 +87,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM transactions WHERE username = ?", new String[]{username});
     }
-    public boolean deleteTransaction(int transactionId) {
+    public boolean deleteTransaction(long transactionId) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete("transactions", "id = ?", new String[]{""+transactionId}) > 0;
     }

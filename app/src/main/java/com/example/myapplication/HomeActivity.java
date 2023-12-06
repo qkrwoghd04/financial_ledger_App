@@ -96,15 +96,18 @@ public class HomeActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.home) {
                 selectedFragment = new HomeFragment();
+                calendarView.setVisibility(View.VISIBLE);
             } else if (item.getItemId() == R.id.statistic) {
                 selectedFragment = new StatisticFragment();
+                calendarView.setVisibility(View.GONE);
             } else if (item.getItemId() == R.id.goals) {
                 selectedFragment = new GoalsFragment();
+                calendarView.setVisibility(View.GONE);
             } else if (item.getItemId() == R.id.account_info){
                 selectedFragment = new AccountFragment();
+                calendarView.setVisibility(View.GONE);
+
             }
-
-
             if (selectedFragment != null) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
             }
@@ -150,24 +153,21 @@ public class HomeActivity extends AppCompatActivity {
                     // 로그인한 사용자의 이름 가져오기
                     String loggedInUsername = getLoggedInUsername();
 
-                    // 데이터베이스에 트랜잭션 저장
-                    boolean isInserted = databaseHelper.insertTransaction(
-                            selectedDate,
-                            type,
-                            description,
-                            amount,
-                            loggedInUsername // 현재 로그인한 사용자 이름
-                    );
+                    // 데이터베이스에 트랜잭션 저장 후 id 반환
+                    long transactionId = databaseHelper.insertTransaction(
+                            selectedDate, type, description, amount, loggedInUsername);
 
-                    if (isInserted) {
-                        Transaction newTransaction = new Transaction(-1 , type, description, String.valueOf(amount), selectedDate);
+                    if (transactionId != -1) {
+                        Transaction newTransaction = new Transaction(
+                                transactionId, type, description, String.valueOf(amount), selectedDate);
                         transactionList.add(newTransaction);
-                        updateCacheWithNewTransaction(selectedDate, newTransaction); // 선택한 날짜로 캐시 업데이트
+                        updateCacheWithNewTransaction(selectedDate, newTransaction);
                         adapter.notifyDataSetChanged();
                         Toast.makeText(HomeActivity.this, "Transaction added successfully", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(HomeActivity.this, "Failed to add transaction", Toast.LENGTH_SHORT).show();
                     }
+
                 } catch (NumberFormatException e) {
                     Toast.makeText(HomeActivity.this, "Invalid amount", Toast.LENGTH_SHORT).show();
                 }
@@ -314,7 +314,6 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 int position = viewHolder.getAdapterPosition();
-                // TODO: 여기에서 트랜잭션 삭제 로직 구현
                 Transaction transaction = transactionList.get(position);
                 deleteTransactionFromDatabase(transaction);
                 transactionList.remove(position);
@@ -329,16 +328,23 @@ public class HomeActivity extends AppCompatActivity {
         if (databaseHelper.deleteTransaction(transaction.getId())) {
             Toast.makeText(this, "Transaction deleted", Toast.LENGTH_SHORT).show();
 
+            // 현재 선택된 날짜의 트랜잭션 목록에서 해당 트랜잭션 제거
             List<Transaction> transactionsForDate = transactionsCache.get(currentSelectedDate);
             if (transactionsForDate != null) {
-                transactionsForDate.remove(transaction);
+                for (int i = 0; i < transactionsForDate.size(); i++) {
+                    if (transactionsForDate.get(i).getId() == transaction.getId()) {
+                        transactionsForDate.remove(i);
+                        break;
+                    }
+                }
             }
 
+            // UI 업데이트
+            adapter.notifyDataSetChanged();
         } else {
             Toast.makeText(this, "Failed to delete transaction", Toast.LENGTH_SHORT).show();
         }
     }
-
 
 
 }

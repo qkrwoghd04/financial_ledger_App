@@ -1,14 +1,14 @@
 package com.example.myapplication;
 
 public class Transaction {
-    private int id;
+    private long id;
     private String type;
     private String description;
     private String amount;
     private String date;
 
     // 생성자
-    public Transaction(int id, String type, String description, String amount, String date) {
+    public Transaction(long id, String type, String description, String amount, String date) {
         this.id = id;
         this.type = type;
         this.description = description;
@@ -19,11 +19,11 @@ public class Transaction {
     // 기본 생성자
     public Transaction(){
     }
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
