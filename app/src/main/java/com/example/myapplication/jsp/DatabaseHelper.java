@@ -14,14 +14,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static  final String databaseName = "Balance Buddy.db";
 
     public DatabaseHelper(@Nullable Context context) {
-        super(context, databaseName, null, 3);
+        super(context, databaseName, null, 4);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL("create Table users(username TEXT primary key, email TEXT, password TEXT)");
         // 가계부 데이터를 저장할 테이블 생성
-        sqLiteDatabase.execSQL("create Table transactions(date TEXT, type TEXT, description TEXT, amount REAL, username TEXT, FOREIGN KEY(username) REFERENCES users(username))");
+        sqLiteDatabase.execSQL("create Table transactions(id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, type TEXT, description TEXT, amount REAL, username TEXT, FOREIGN KEY(username) REFERENCES users(username))");
     }
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
@@ -87,5 +87,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getTransactionsByUsername(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM transactions WHERE username = ?", new String[]{username});
+    }
+    public boolean deleteTransaction(int transactionId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("transactions", "id = ?", new String[]{""+transactionId}) > 0;
     }
 }

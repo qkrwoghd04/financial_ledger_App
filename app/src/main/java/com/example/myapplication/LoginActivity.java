@@ -104,9 +104,9 @@ public class LoginActivity extends AppCompatActivity {
         editor.apply();
     }
 
-//    private String getLoggedInUsername() {
-//        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
-//        return sharedPreferences.getString("username", null);
-//    }
+    private String getLoggedInUsername() {
+        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
+        return sharedPreferences.getString("username", null);
+    }
 
 }

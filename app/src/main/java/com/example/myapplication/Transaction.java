@@ -1,13 +1,15 @@
 package com.example.myapplication;
 
 public class Transaction {
+    private int id;
     private String type;
     private String description;
     private String amount;
-    private String date; // 날짜 필드 추가
+    private String date;
 
     // 생성자
-    public Transaction(String type, String description, String amount, String date) {
+    public Transaction(int id, String type, String description, String amount, String date) {
+        this.id = id;
         this.type = type;
         this.description = description;
         this.amount = amount;
@@ -17,6 +19,14 @@ public class Transaction {
     // 기본 생성자
     public Transaction(){
     }
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
 
     // Getter와 Setter 메서드
     public String getType() {

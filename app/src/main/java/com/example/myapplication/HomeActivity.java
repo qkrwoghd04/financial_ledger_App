@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.adapter.TransactionAdapter;
@@ -64,6 +65,7 @@ public class HomeActivity extends AppCompatActivity {
         bottomNav.setOnNavigationItemSelectedListener(navListener);
         databaseHelper = new DatabaseHelper(this);
         loadUserTransactions();
+        setupRecyclerView();
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -158,7 +160,7 @@ public class HomeActivity extends AppCompatActivity {
                     );
 
                     if (isInserted) {
-                        Transaction newTransaction = new Transaction(type, description, String.valueOf(amount), selectedDate);
+                        Transaction newTransaction = new Transaction(-1 , type, description, String.valueOf(amount), selectedDate);
                         transactionList.add(newTransaction);
                         updateCacheWithNewTransaction(selectedDate, newTransaction); // 선택한 날짜로 캐시 업데이트
                         adapter.notifyDataSetChanged();
@@ -204,14 +206,17 @@ public class HomeActivity extends AppCompatActivity {
                 int descriptionIndex = cursor.getColumnIndex("description");
                 int amountIndex = cursor.getColumnIndex("amount");
                 int dateIndex = cursor.getColumnIndex("date"); // 날짜 인덱스 추가
+                int idIndex = cursor.getColumnIndex("id");
 
-                if (typeIndex != -1 && descriptionIndex != -1 && amountIndex != -1 && dateIndex != -1) {
+
+                if (idIndex != -1 && typeIndex != -1 && descriptionIndex != -1 && amountIndex != -1 && dateIndex != -1) {
+                    int id = cursor.getInt(idIndex);
                     String type = cursor.getString(typeIndex);
                     String description = cursor.getString(descriptionIndex);
                     String amount = cursor.getString(amountIndex);
-                    String transactionDate = cursor.getString(dateIndex); // 날짜 정보 가져오기
+                    String transactionDate = cursor.getString(dateIndex);
 
-                    transactionsForDate.add(new Transaction(type, description, amount, transactionDate));
+                    transactionsForDate.add(new Transaction(id, type, description, amount, transactionDate));
                     Log.d("HomeActivity", "Transaction loaded: Type=" + type + ", Description=" + description + ", Amount=" + amount + ", Date=" + transactionDate); // 로그 업데이트
                 }
             }
@@ -266,18 +271,21 @@ public class HomeActivity extends AppCompatActivity {
         Cursor cursor = databaseHelper.getTransactionsByUsername(username);
 
         if (cursor != null) {
+            int idIndex = cursor.getColumnIndex("id");
             int typeIndex = cursor.getColumnIndex("type");
             int descriptionIndex = cursor.getColumnIndex("description");
             int amountIndex = cursor.getColumnIndex("amount");
             int dateIndex = cursor.getColumnIndex("date");
 
             while (cursor.moveToNext()) {
-                String type = (typeIndex != -1) ? cursor.getString(typeIndex) : "";
-                String description = (descriptionIndex != -1) ? cursor.getString(descriptionIndex) : "";
-                String amount = (amountIndex != -1) ? cursor.getString(amountIndex) : "";
-                String date = (dateIndex != -1) ? cursor.getString(dateIndex) : "";
+                int id = idIndex != -1 ? cursor.getInt(idIndex) : -1;
+                String type = typeIndex != -1 ? cursor.getString(typeIndex) : "";
+                String description = descriptionIndex != -1 ? cursor.getString(descriptionIndex) : "";
+                String amount = amountIndex != -1 ? cursor.getString(amountIndex) : "";
+                String date = dateIndex != -1 ? cursor.getString(dateIndex) : "";
 
-                Transaction transaction = new Transaction(type, description, amount, date);
+                // Transaction 객체 생성 시 id를 포함합니다.
+                Transaction transaction = new Transaction(id, type, description, amount, date);
                 transactions.add(transaction);
             }
             cursor.close();
@@ -285,8 +293,52 @@ public class HomeActivity extends AppCompatActivity {
 
         return transactions;
     }
+
     private String getLoggedInUsername() {
         SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
         return sharedPreferences.getString("username", null);
     }
+    private void setupRecyclerView() {
+        recyclerView = findViewById(R.id.recyclerView);
+        transactionList = new ArrayList<>();
+        adapter = new TransactionAdapter(transactionList);
+        recyclerView.setAdapter(adapter);
+
+        // 스와이프 기능 추가
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                int position = viewHolder.getAdapterPosition();
+                // TODO: 여기에서 트랜잭션 삭제 로직 구현
+                Transaction transaction = transactionList.get(position);
+                deleteTransactionFromDatabase(transaction);
+                transactionList.remove(position);
+                adapter.notifyItemRemoved(position);
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+    }
+    private void deleteTransactionFromDatabase(Transaction transaction) {
+        if (databaseHelper.deleteTransaction(transaction.getId())) {
+            Toast.makeText(this, "Transaction deleted", Toast.LENGTH_SHORT).show();
+
+            List<Transaction> transactionsForDate = transactionsCache.get(currentSelectedDate);
+            if (transactionsForDate != null) {
+                transactionsForDate.remove(transaction);
+            }
+
+        } else {
+            Toast.makeText(this, "Failed to delete transaction", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
 }

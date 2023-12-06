@@ -25,20 +25,20 @@ public class FetchTransactionsTask extends AsyncTask<String, Void, List<Transact
         Cursor cursor = databaseHelper.getTransactionsByUsername(username);
 
         if (cursor != null) {
+            int idIndex = cursor.getColumnIndex("id");
+            int typeIndex = cursor.getColumnIndex("type");
+            int descriptionIndex = cursor.getColumnIndex("description");
+            int amountIndex = cursor.getColumnIndex("amount");
+            int dateIndex = cursor.getColumnIndex("date");
+
             while (cursor.moveToNext()) {
-                int typeIndex = cursor.getColumnIndex("type");
-                int descriptionIndex = cursor.getColumnIndex("description");
-                int amountIndex = cursor.getColumnIndex("amount");
-                int dateIndex = cursor.getColumnIndex("date");
+                int id = idIndex != -1 ? cursor.getInt(idIndex) : -1;
+                String type = typeIndex != -1 ? cursor.getString(typeIndex) : "";
+                String description = descriptionIndex != -1 ? cursor.getString(descriptionIndex) : "";
+                String amount = amountIndex != -1 ? cursor.getString(amountIndex) : "";
+                String date = dateIndex != -1 ? cursor.getString(dateIndex) : "";
 
-                if (typeIndex != -1 && descriptionIndex != -1 && amountIndex != -1 && dateIndex != -1) {
-                    String type = cursor.getString(typeIndex);
-                    String description = cursor.getString(descriptionIndex);
-                    String amount = cursor.getString(amountIndex);
-                    String date = cursor.getString(dateIndex);
-
-                    transactions.add(new Transaction(type, description, amount, date));
-                }
+                transactions.add(new Transaction(id, type, description, amount, date));
             }
             cursor.close();
         }
