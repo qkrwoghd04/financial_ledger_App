@@ -20,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.fomatter.DayAxisValueFormatter;
 import com.example.myapplication.jsp.DatabaseHelper;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -44,6 +45,7 @@ public class StatisticFragment extends Fragment {
     private ImageButton buttonNextWeek;
     private DatabaseHelper databaseHelper;
     private String currentUser;
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
 
 
 
@@ -81,6 +83,7 @@ public class StatisticFragment extends Fragment {
         currentWeekEnd.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
 
         updateDateRange();
+        prepareChartData(createChartData(), lineChart);
 
 
         buttonPreviousWeek.setOnClickListener(new View.OnClickListener() {
@@ -153,7 +156,7 @@ public class StatisticFragment extends Fragment {
         xAxis.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD)); // Bold labels
         xAxis.setSpaceMin(0.3f);
         xAxis.setSpaceMax(0.3f);
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(new String[]{"S", "M", "T", "W", "T", "F", "S"}));
+        xAxis.setValueFormatter(new DayAxisValueFormatter());
 
         // y axis design
         YAxis yAxisLeft = lineChart.getAxisLeft();
@@ -173,38 +176,40 @@ public class StatisticFragment extends Fragment {
         ArrayList<Entry> entriesExpense = new ArrayList<>();
 
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+
 
         for (int i = 6; i >= 0; i--) {
-            calendar.add(Calendar.DAY_OF_YEAR, -i);
-            String dateStr = sdf.format(calendar.getTime());
-            Cursor cursor = databaseHelper.getTransactionsByDate(dateStr, currentUser);
+            if(calendar != null){
+                calendar.add(Calendar.DAY_OF_YEAR, -i);
+                String dateStr = sdf.format(calendar.getTime());
+                Cursor cursor = databaseHelper.getTransactionsByDate(dateStr, currentUser);
 
-            if (cursor != null && cursor.moveToFirst()) {
-                float totalIncome = 0;
-                float totalExpense = 0;
+                if (cursor != null && cursor.moveToFirst()) {
+                    float totalIncome = 0;
+                    float totalExpense = 0;
 
-                do {
-                    int typeIndex = cursor.getColumnIndex("type");
-                    int amountIndex = cursor.getColumnIndex("amount");
+                    do {
+                        int typeIndex = cursor.getColumnIndex("type");
+                        int amountIndex = cursor.getColumnIndex("amount");
 
-                    if (typeIndex != -1 && amountIndex != -1) {
-                        String type = cursor.getString(typeIndex);
-                        float amount = cursor.getFloat(amountIndex);
+                        if (typeIndex != -1 && amountIndex != -1) {
+                            String type = cursor.getString(typeIndex);
+                            float amount = cursor.getFloat(amountIndex);
 
-                        if ("Income".equals(type)) {
-                            totalIncome += amount;
-                        } else if ("Expense".equals(type)) {
-                            totalExpense += amount;
+                            if ("Income".equals(type)) {
+                                totalIncome += amount;
+                            } else if ("Expense".equals(type)) {
+                                totalExpense += amount;
+                            }
                         }
-                    }
-                } while (cursor.moveToNext());
-                cursor.close();
+                    } while (cursor.moveToNext());
+                    cursor.close();
 
-                entriesIncome.add(new Entry(6 - i, totalIncome));
-                entriesExpense.add(new Entry(6 - i, totalExpense));
+                    entriesIncome.add(new Entry(6 - i, totalIncome));
+                    entriesExpense.add(new Entry(6 - i, totalExpense));
+                }
+                calendar.add(Calendar.DAY_OF_YEAR, i);
             }
-            calendar.add(Calendar.DAY_OF_YEAR, i);
         }
         LineDataSet dataSetIncome = new LineDataSet(entriesIncome, "Income");
         dataSetIncome.setColor(Color.GREEN);
