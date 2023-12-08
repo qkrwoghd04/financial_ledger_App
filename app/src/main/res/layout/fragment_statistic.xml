@@ -1,119 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".fragment.StatisticFragment">
 
-    <!-- AppBar -->
-    <TextView
-        android:id="@+id/textViewTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Statistics"
-        android:textSize="20sp"
-        android:textColor="@android:color/black"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
-
-    <!-- Toggle Buttons -->
-    <LinearLayout
-        android:id="@+id/llToggleButtons"
+    <FrameLayout
+        android:id="@+id/addButtonLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_below="@id/textViewTitle"
-        android:background="@color/white"
-        android:layout_marginTop="20dp">
-
-        <Button
-            android:id="@+id/btnDay"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:text="Day"
-            android:textColor="@color/black"
-            android:background="@color/white"
-            android:gravity="center"/>
-
-        <Button
-            android:id="@+id/btnMonth"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:text="Month"
-            android:textColor="@color/black"
-            android:background="@color/white"
-            android:gravity="center"/>
-
-        <Button
-            android:id="@+id/btnYear"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:text="Year"
-            android:textColor="@color/black"
-            android:background="@color/white"
-            android:gravity="center"/>
-
-    </LinearLayout>
-
-    <!-- Chart -->
-    <!-- You will need to implement a Chart View or use a library for this part -->
+        android:layout_alignParentBottom="true"/>
 
     <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/lineChart"
+        android:id="@+id/chart"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_below="@id/llToggleButtons"
+        android:layout_height="241dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="117dp">
+    </com.github.mikephil.charting.charts.LineChart>
+
+    <TextView
+        android:id="@+id/tv_weekly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="17dp"
+        android:text="Weekly Stats"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <ImageButton
+        android:id="@+id/bt_prev"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="100dp"
         android:layout_marginTop="20dp"
-        app:layout_constraintTop_toBottomOf="@id/llToggleButtons"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:background="@android:color/transparent"
+        app:srcCompat="@drawable/ic_prev" />
 
-    <!-- Top Spending Section -->
-    <LinearLayout
-        android:id="@+id/llTopSpending"
-        android:layout_width="match_parent"
+
+    <ImageButton
+        android:id="@+id/bt_next"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_below="@id/llToggleButtons"
-        android:layout_marginTop="20dp">
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="100dp"
+        android:background="@android:color/transparent"
+        app:srcCompat="@drawable/ic_next" />
 
-        <TextView
-            android:id="@+id/textViewTopSpending"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Top Spending"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"/>
-
-<!--        <ImageView-->
-<!--            android:id="@+id/imageViewSwap"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:src="@drawable/baseline_filter_list_24"-->
-<!--            android:layout_gravity="center_vertical"-->
-<!--            app:tint="@android:color/darker_gray" />-->
-
-    </LinearLayout>
-
-    <!-- RecyclerView for the List Items -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/llTopSpending"
-        android:layout_marginTop="12dp" />
-
-    <Button
-        android:id="@+id/btnWeek"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_weight="1"
-        android:background="@color/white"
-        android:gravity="center"
-        android:text="Week"
-        android:textColor="@color/black" />
 
 </RelativeLayout>

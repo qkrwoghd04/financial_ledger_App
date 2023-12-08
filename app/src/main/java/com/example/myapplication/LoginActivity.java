@@ -1,7 +1,6 @@
 package com.example.myapplication;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,7 +13,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.myapplication.fragment.HomeFragment;
 import com.example.myapplication.jsp.DatabaseHelper;
 
 public class LoginActivity extends AppCompatActivity {

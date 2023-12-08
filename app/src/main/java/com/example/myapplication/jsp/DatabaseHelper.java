@@ -5,8 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
+
+import com.example.myapplication.model.Transaction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -14,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static  final String databaseName = "Balance Buddy.db";
 
     public DatabaseHelper(@Nullable Context context) {
-        super(context, databaseName, null, 4);
+        super(context, databaseName, null, 9);
     }
 
     @Override
@@ -80,8 +86,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getTransactionsByDate(String date, String username) {
         SQLiteDatabase db = this.getWritableDatabase();
-        return db.rawQuery("Select * from transactions where date = ? and username = ?", new String[] {date, username});
+        Log.d("DatabaseHelper", "getTransactionsByDate: date = " + date + ", username = " + username);
+        Cursor cursor = db.rawQuery("Select * from transactions where date = ? and username = ?", new String[] {date, username});
+        if (cursor != null) {
+            Log.d("DatabaseHelper", "Cursor count: " + cursor.getCount());
+        } else {
+            Log.d("DatabaseHelper", "Cursor is null");
+        }
+        return cursor;
     }
+
 
     public Cursor getTransactionsByUsername(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -91,4 +105,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete("transactions", "id = ?", new String[]{""+transactionId}) > 0;
     }
+
+    public List<Transaction> getAllTransactions() {
+        List<Transaction> transactionList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM transactions", null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                int idIndex = cursor.getColumnIndex("id");
+                int dateIndex = cursor.getColumnIndex("date");
+                int typeIndex = cursor.getColumnIndex("type");
+                int descriptionIndex = cursor.getColumnIndex("description");
+                int amountIndex = cursor.getColumnIndex("amount");
+                int usernameIndex = cursor.getColumnIndex("username");
+
+                if (idIndex != -1 && dateIndex != -1 && typeIndex != -1 && descriptionIndex != -1 && amountIndex != -1 && usernameIndex != -1) {
+                    int id = cursor.getInt(idIndex);
+                    String date = cursor.getString(dateIndex);
+                    String type = cursor.getString(typeIndex);
+                    String description = cursor.getString(descriptionIndex);
+                    double amount = cursor.getDouble(amountIndex);
+                    String username = cursor.getString(usernameIndex);
+
+                    Transaction transaction = new Transaction(id, type, description, String.valueOf(amount), date);
+                    transactionList.add(transaction);
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return transactionList;
+    }
+
 }

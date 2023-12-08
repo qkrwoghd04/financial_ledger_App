@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_home"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,7 +13,7 @@
         android:layout_height="wrap_content"
         app:cardElevation="5dp"
         android:elevation="10dp">
-        
+
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="vertical"
@@ -98,7 +99,7 @@
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
-    
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

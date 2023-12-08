@@ -1,4 +1,6 @@
-package com.example.myapplication;
+package com.example.myapplication.model;
+
+import java.util.Date;
 
 public class Transaction {
     private long id;

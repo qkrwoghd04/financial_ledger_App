@@ -1,6 +1,8 @@
 package com.example.myapplication;
 
 import android.content.SharedPreferences;
+import android.icu.text.SimpleDateFormat;
+import android.text.format.DateFormat;
 import android.util.Log; // 로그를 위한 임포트
 import android.database.Cursor;
 import android.os.Bundle;
@@ -15,6 +17,7 @@ import com.example.myapplication.fragment.AccountFragment;
 import com.example.myapplication.fragment.HomeFragment;
 import com.example.myapplication.fragment.StatisticFragment;
 import com.example.myapplication.fragment.GoalsFragment; // GoalsFragment를 import 해야 합니다.
+import com.example.myapplication.model.Transaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.example.myapplication.jsp.DatabaseHelper;
@@ -33,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +50,7 @@ public class HomeActivity extends AppCompatActivity {
     private Map<String, List<Transaction>> transactionsCache = new HashMap<>();
     private Map<String, Long> lastLoadTime = new HashMap<>();
     private final long CACHE_VALID_DURATION = TimeUnit.MINUTES.toMillis(30);
-    private String currentSelectedDate = ""; // 현재 선택된 날짜를 저장하는 변수
+    private String selectedDate = ""; // 현재 선택된 날짜를 저장하는 변수
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,23 +59,33 @@ public class HomeActivity extends AppCompatActivity {
         calendarView = findViewById(R.id.calendarView);
         diaryTextView = findViewById(R.id.diaryTextView);
         textView3 = findViewById(R.id.textView3);
-
         recyclerView = findViewById(R.id.recyclerView);
         transactionList = new ArrayList<>();
         adapter = new TransactionAdapter(transactionList);
         recyclerView.setAdapter(adapter);
-
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
         databaseHelper = new DatabaseHelper(this);
-        loadUserTransactions();
-        setupRecyclerView();
 
+
+        setupRecyclerView();
+        transactionsCache.clear();
+        lastLoadTime.clear();
+
+        // 현재 날짜 설정
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        selectedDate = sdf.format(calendar.getTime());
+
+
+        // 현재 날짜에 해당하는 트랜잭션만 로드
+        loadTransactionsForDate(selectedDate);
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                currentSelectedDate = String.format("%d/%d/%d", year, month + 1, dayOfMonth);
-                loadTransactionsForDate(currentSelectedDate);
+                // 날짜 형식 변환
+                selectedDate = String.format(Locale.getDefault(), "%d/%02d/%02d", year, month + 1, dayOfMonth);
+                loadTransactionsForDate(selectedDate);
             }
         });
 
@@ -93,10 +107,12 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             Fragment selectedFragment = null;
+            boolean isHomeFragment = false;
 
             if (item.getItemId() == R.id.home) {
                 selectedFragment = new HomeFragment();
                 calendarView.setVisibility(View.VISIBLE);
+                isHomeFragment = true;
             } else if (item.getItemId() == R.id.statistic) {
                 selectedFragment = new StatisticFragment();
                 calendarView.setVisibility(View.GONE);
@@ -106,11 +122,11 @@ public class HomeActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.account_info){
                 selectedFragment = new AccountFragment();
                 calendarView.setVisibility(View.GONE);
-
             }
             if (selectedFragment != null) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
             }
+            recyclerView.setVisibility(isHomeFragment ? View.VISIBLE : View.GONE);
 
             return true;
         }
@@ -121,6 +137,9 @@ public class HomeActivity extends AppCompatActivity {
         dialog.setContentView(R.layout.dialog_layout);
 
         // 대화창 내의 컴포넌트 참조
+        TextView selectedDateText = dialog.findViewById(R.id.selectedDate);
+        selectedDateText.setText(selectedDate);
+
         EditText editTextDescription = dialog.findViewById(R.id.editTextDescription);
         EditText editTextAmount = dialog.findViewById(R.id.editTextAmount);
         RadioButton radioIncome = dialog.findViewById(R.id.radioIncome);
@@ -144,18 +163,15 @@ public class HomeActivity extends AppCompatActivity {
                     // 현재 선택된 날짜를 가져오기
                     long selectedDateMillis = calendarView.getDate();
                     Log.d("" + selectedDateMillis, "View Date");
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(selectedDateMillis);
-                    String selectedDate = currentSelectedDate;
-                    Log.d(selectedDate, "selected Date");
+                    Log.d(""+ selectedDateMillis, "selected Date");
+
 
 
                     // 로그인한 사용자의 이름 가져오기
                     String loggedInUsername = getLoggedInUsername();
 
                     // 데이터베이스에 트랜잭션 저장 후 id 반환
-                    long transactionId = databaseHelper.insertTransaction(
-                            selectedDate, type, description, amount, loggedInUsername);
+                    long transactionId = databaseHelper.insertTransaction(selectedDate, type, description, amount, loggedInUsername);
 
                     if (transactionId != -1) {
                         Transaction newTransaction = new Transaction(
@@ -163,9 +179,6 @@ public class HomeActivity extends AppCompatActivity {
                         transactionList.add(newTransaction);
                         updateCacheWithNewTransaction(selectedDate, newTransaction);
                         adapter.notifyDataSetChanged();
-                        Toast.makeText(HomeActivity.this, "Transaction added successfully", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(HomeActivity.this, "Failed to add transaction", Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (NumberFormatException e) {
@@ -181,14 +194,12 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void loadTransactionsForDate(String date) {
-        Log.d("HomeActivity", "Loading transactions for date: " + date);
+
         if (transactionsCache.containsKey(date)) {
-            Log.d("HomeActivity", "Loading from cache");
             transactionList.clear();
             transactionList.addAll(transactionsCache.get(date));
             adapter.notifyDataSetChanged();
         } else {
-            Log.d("HomeActivity", "Loading from database");
             loadTransactionsFromDatabase(date);
         }
     }
@@ -196,7 +207,6 @@ public class HomeActivity extends AppCompatActivity {
 
 
     private void loadTransactionsFromDatabase(String date) {
-        Log.d("HomeActivity", "Querying database for transactions on date: " + date);
         Cursor cursor = databaseHelper.getTransactionsByDate(date, getLoggedInUsername());
 
         List<Transaction> transactionsForDate = new ArrayList<>();
@@ -217,83 +227,27 @@ public class HomeActivity extends AppCompatActivity {
                     String transactionDate = cursor.getString(dateIndex);
 
                     transactionsForDate.add(new Transaction(id, type, description, amount, transactionDate));
-                    Log.d("HomeActivity", "Transaction loaded: Type=" + type + ", Description=" + description + ", Amount=" + amount + ", Date=" + transactionDate); // 로그 업데이트
+
                 }
             }
             cursor.close();
         }
 
-        transactionsCache.put(date, transactionsForDate);
+        transactionsCache.put(""+date, transactionsForDate);
         transactionList.clear();
         transactionList.addAll(transactionsForDate);
         adapter.notifyDataSetChanged();
-        Log.d("HomeActivity", "Database load complete, transactions size: " + transactionsForDate.size()); // 로딩 완료 로그 추가
-        lastLoadTime.put(date, System.currentTimeMillis());
+        lastLoadTime.put(""+date, System.currentTimeMillis());
     }
-
-
 
     private void updateCacheWithNewTransaction(String date, Transaction transaction) {
         List<Transaction> transactionsForDate = transactionsCache.get(date);
         if (transactionsForDate == null) {
             transactionsForDate = new ArrayList<>();
-            transactionsCache.put(date, transactionsForDate);
+            transactionsCache.put(""+date, transactionsForDate);
         }
         transactionsForDate.add(transaction);
     }
-
-    private boolean isCacheInvalid(String date) {
-        Long lastLoaded = lastLoadTime.get(date);
-        if (lastLoaded == null) {
-            // 캐시된 데이터가 없으므로 유효하지 않음
-            return true;
-        }
-        long currentTime = System.currentTimeMillis();
-        return (currentTime - lastLoaded) > CACHE_VALID_DURATION;
-    }
-
-    private void loadUserTransactions() {
-        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
-        String username = sharedPreferences.getString("username", "");
-
-        if (!username.isEmpty()) {
-            new FetchTransactionsTask(databaseHelper, transactions -> {
-                transactionList.clear();
-                transactionList.addAll(transactions);
-                adapter.notifyDataSetChanged();
-            }).execute(username);
-        }
-    }
-
-
-    private List<Transaction> getTransactionsForUser(String username) {
-        List<Transaction> transactions = new ArrayList<>();
-        Cursor cursor = databaseHelper.getTransactionsByUsername(username);
-
-        if (cursor != null) {
-            int idIndex = cursor.getColumnIndex("id");
-            int typeIndex = cursor.getColumnIndex("type");
-            int descriptionIndex = cursor.getColumnIndex("description");
-            int amountIndex = cursor.getColumnIndex("amount");
-            int dateIndex = cursor.getColumnIndex("date");
-
-            while (cursor.moveToNext()) {
-                int id = idIndex != -1 ? cursor.getInt(idIndex) : -1;
-                String type = typeIndex != -1 ? cursor.getString(typeIndex) : "";
-                String description = descriptionIndex != -1 ? cursor.getString(descriptionIndex) : "";
-                String amount = amountIndex != -1 ? cursor.getString(amountIndex) : "";
-                String date = dateIndex != -1 ? cursor.getString(dateIndex) : "";
-
-                // Transaction 객체 생성 시 id를 포함합니다.
-                Transaction transaction = new Transaction(id, type, description, amount, date);
-                transactions.add(transaction);
-            }
-            cursor.close();
-        }
-
-        return transactions;
-    }
-
     private String getLoggedInUsername() {
         SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
         return sharedPreferences.getString("username", null);
@@ -329,7 +283,7 @@ public class HomeActivity extends AppCompatActivity {
             Toast.makeText(this, "Transaction deleted", Toast.LENGTH_SHORT).show();
 
             // 현재 선택된 날짜의 트랜잭션 목록에서 해당 트랜잭션 제거
-            List<Transaction> transactionsForDate = transactionsCache.get(currentSelectedDate);
+            List<Transaction> transactionsForDate = transactionsCache.get(selectedDate);
             if (transactionsForDate != null) {
                 for (int i = 0; i < transactionsForDate.size(); i++) {
                     if (transactionsForDate.get(i).getId() == transaction.getId()) {
@@ -338,13 +292,10 @@ public class HomeActivity extends AppCompatActivity {
                     }
                 }
             }
-
-            // UI 업데이트
             adapter.notifyDataSetChanged();
         } else {
             Toast.makeText(this, "Failed to delete transaction", Toast.LENGTH_SHORT).show();
         }
     }
-
 
 }

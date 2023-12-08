@@ -1,66 +1,65 @@
 package com.example.myapplication.fragment;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+
 
 import com.example.myapplication.R;
+import com.example.myapplication.jsp.DatabaseHelper;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class HomeFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+    private DatabaseHelper databaseHelper;
+    private TextView incomeTextView, expenseTextView;
+    private String currentDate = "";
     public HomeFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment NavigationFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    // Factory method and other initialization methods removed for brevity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        databaseHelper = new DatabaseHelper(getActivity());
+
+        // Additional initialization if needed
+
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        // Initialize TextViews
+        incomeTextView = view.findViewById(R.id.income_set_result);
+        expenseTextView = view.findViewById(R.id.expense_set_result);
+
+        return view;
+    }
+
+    // Method to load transactions for a specific date
+
+    // Method to update UI with the calculated income and expense values
+    private void updateIncomeExpenseUI(double income, double expense) {
+        Log.d("HomeFragment", "Updating UI - Income: " + income + ", Expense: " + expense);
+        incomeTextView.setText(String.format("%.2f", income));
+        expenseTextView.setText(String.format("%.2f", expense));
+    }
+
+    // Method to get the logged-in username
+    private String getLoggedInUsername() {
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("shared_pref", Context.MODE_PRIVATE);
+        return sharedPreferences.getString("username", "");
     }
 }

@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 
 import com.example.myapplication.jsp.DatabaseHelper;
+import com.example.myapplication.model.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;

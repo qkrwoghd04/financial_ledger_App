@@ -5,6 +5,15 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
+    <TextView
+        android:id="@+id/textViewDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="16sp"
+        android:textColor="#FF0000"
+        android:padding="4dp" />
+
 
     <TextView
         android:id="@+id/textViewType"
