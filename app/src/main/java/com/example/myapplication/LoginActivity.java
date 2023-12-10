@@ -27,6 +27,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // SharedPreferences에서 로그인 상태 확인
+        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
+        boolean isLoggedIn = sharedPreferences.getBoolean("loggedIn", false);
+        if (isLoggedIn) {
+            // 이미 로그인된 경우, 메인 화면으로 바로 이동
+            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+            startActivity(intent);
+            finish();
+        }
         et_username = findViewById(R.id.username);
         et_password = findViewById(R.id.password);
         login_button = findViewById(R.id.login_button);

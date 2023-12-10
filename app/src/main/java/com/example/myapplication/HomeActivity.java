@@ -2,7 +2,6 @@ package com.example.myapplication;
 
 import android.content.SharedPreferences;
 import android.icu.text.SimpleDateFormat;
-import android.text.format.DateFormat;
 import android.util.Log; // 로그를 위한 임포트
 import android.database.Cursor;
 import android.os.Bundle;
@@ -172,7 +171,7 @@ public class HomeActivity extends AppCompatActivity {
 
                     // 데이터베이스에 트랜잭션 저장 후 id 반환
                     long transactionId = databaseHelper.insertTransaction(selectedDate, type, description, amount, loggedInUsername);
-
+                    addNewTransaction(selectedDate,type,amount);
                     if (transactionId != -1) {
                         Transaction newTransaction = new Transaction(
                                 transactionId, type, description, String.valueOf(amount), selectedDate);
@@ -297,5 +296,14 @@ public class HomeActivity extends AppCompatActivity {
             Toast.makeText(this, "Failed to delete transaction", Toast.LENGTH_SHORT).show();
         }
     }
+    private void addNewTransaction(String date, String type, double amount) {
+        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("lastTransactionDate", date);
+        editor.putString("lastTransactionType", type);
+        editor.putFloat("lastTransactionAmount", (float) amount);
+        editor.apply();
+    }
+
 
 }

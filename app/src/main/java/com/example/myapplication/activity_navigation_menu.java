@@ -57,13 +57,6 @@ public class activity_navigation_menu extends AppCompatActivity implements Navig
         });
     }
 
-    private void replaceFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.frame_layout, fragment);
-        fragmentTransaction.commit();
-    }
-
     private void showBottomDialog() {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -96,8 +89,6 @@ public class activity_navigation_menu extends AppCompatActivity implements Navig
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // 이 메서드는 DrawerLayout의 NavigationView 아이템 선택을 처리합니다.
-        // 필요한 경우 DrawerLayout의 아이템에 대한 처리 로직을 여기에 추가하세요.
         return false;
     }
 }

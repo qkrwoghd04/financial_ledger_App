@@ -12,6 +12,48 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"/>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="#BAB4B4"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tv_weekly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:text="Weekly Stats"
+            android:textColor="#000000"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/bt_prev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="15dp"
+            android:background="@android:color/transparent"
+            app:srcCompat="@drawable/ic_prev" />
+
+
+        <ImageButton
+            android:id="@+id/bt_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="100dp"
+            android:background="@android:color/transparent"
+            app:srcCompat="@drawable/ic_next" />
+
+    </RelativeLayout>
+
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/chart"
         android:layout_width="match_parent"
@@ -22,39 +64,7 @@
         android:layout_marginTop="117dp">
     </com.github.mikephil.charting.charts.LineChart>
 
-    <TextView
-        android:id="@+id/tv_weekly"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="17dp"
-        android:text="Weekly Stats"
-        android:textColor="#000000"
-        android:textSize="20sp"
-        android:textStyle="bold" />
 
-    <ImageButton
-        android:id="@+id/bt_prev"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="20dp"
-        android:background="@android:color/transparent"
-        app:srcCompat="@drawable/ic_prev" />
-
-
-    <ImageButton
-        android:id="@+id/bt_next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="100dp"
-        android:background="@android:color/transparent"
-        app:srcCompat="@drawable/ic_next" />
 
 
 </RelativeLayout>

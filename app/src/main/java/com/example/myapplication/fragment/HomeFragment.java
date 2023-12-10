@@ -3,6 +3,7 @@ package com.example.myapplication.fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -17,6 +18,9 @@ import androidx.fragment.app.Fragment;
 import com.example.myapplication.R;
 import com.example.myapplication.jsp.DatabaseHelper;
 
+import java.util.Calendar;
+import java.util.Locale;
+
 public class HomeFragment extends Fragment {
 
     private DatabaseHelper databaseHelper;
@@ -26,7 +30,26 @@ public class HomeFragment extends Fragment {
         // Required empty public constructor
     }
 
-    // Factory method and other initialization methods removed for brevity
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("HomeFragment", "onResume: 시작");
+
+        // 현재 달의 첫날과 마지막 날 계산
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        String startDate = dateFormat.format(calendar.getTime());
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        String endDate = dateFormat.format(calendar.getTime());
+
+        Log.d("HomeFragment", "조회 기간: " + startDate + " ~ " + endDate);
+
+        // 데이터베이스에서 수입과 지출 합산
+        Pair<Double, Double> incomeExpense = databaseHelper.getMonthlyIncomeExpense(getLoggedInUsername(), startDate, endDate);
+        updateIncomeExpenseUI(incomeExpense.first, incomeExpense.second);
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,9 +75,8 @@ public class HomeFragment extends Fragment {
 
     // Method to update UI with the calculated income and expense values
     private void updateIncomeExpenseUI(double income, double expense) {
-        Log.d("HomeFragment", "Updating UI - Income: " + income + ", Expense: " + expense);
-        incomeTextView.setText(String.format("%.2f", income));
-        expenseTextView.setText(String.format("%.2f", expense));
+        incomeTextView.setText(String.format(Locale.getDefault(), "%.2f", income));
+        expenseTextView.setText(String.format(Locale.getDefault(), "%.2f", expense));
     }
 
     // Method to get the logged-in username

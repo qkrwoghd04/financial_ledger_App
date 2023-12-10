@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
@@ -20,7 +21,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static  final String databaseName = "Balance Buddy.db";
 
     public DatabaseHelper(@Nullable Context context) {
-        super(context, databaseName, null, 9);
+        super(context, databaseName, null, 10);
     }
 
     @Override
@@ -135,6 +136,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return transactionList;
+    }
+    // 한 달 동안의 수입과 지출을 합산하는 메소드
+    public Pair<Double, Double> getMonthlyIncomeExpense(String username, String startDate, String endDate) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double totalIncome = 0.0;
+        double totalExpense = 0.0;
+
+        String query = "SELECT type, SUM(amount) as total FROM transactions WHERE username = ? AND date BETWEEN ? AND ? GROUP BY type";
+        Cursor cursor = db.rawQuery(query, new String[]{username, startDate, endDate});
+
+        if (cursor.moveToFirst()) {
+            do {
+                int typeIndex = cursor.getColumnIndex("type");
+                int amountIndex = cursor.getColumnIndex("total");
+                if (typeIndex != -1 && amountIndex != -1) {
+                    String type = cursor.getString(typeIndex);
+                    double amount = cursor.getDouble(amountIndex);
+
+                    Log.d("DatabaseHelper", "Type: " + type + ", Amount: " + amount);
+
+                    if (type.equals("Income")) {
+                        totalIncome += amount;
+                    } else if (type.equals("Expense")) {
+                        totalExpense += amount;
+                    }
+                }
+            } while (cursor.moveToNext());
+        } else {
+            Log.d("DatabaseHelper", "커서가 비어 있음");
+        }
+        cursor.close();
+
+        return new Pair<>(totalIncome, totalExpense);
     }
 
 }

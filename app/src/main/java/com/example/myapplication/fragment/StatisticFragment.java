@@ -29,6 +29,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -87,6 +88,7 @@ public class StatisticFragment extends Fragment {
         prepareChartData(createChartData(), lineChart);
         dayAxisValueFormatter = new DayAxisValueFormatter(currentWeekStart);
         configureChartAppearance(lineChart);
+
 
 
 
@@ -153,6 +155,10 @@ public class StatisticFragment extends Fragment {
     private void configureChartAppearance(LineChart lineChart){
         // x axis design
         // Customization for X-axis
+        lineChart.setBackgroundColor(Color.WHITE); // 배경색 변경
+        lineChart.setDrawBorders(false); // 경계선 없애기
+        lineChart.setExtraOffsets(10, 10, 10, 10); // 여백 조정
+
         XAxis xAxis = lineChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(false); // No grid lines
@@ -164,10 +170,11 @@ public class StatisticFragment extends Fragment {
 
         // y axis design
         YAxis yAxisLeft = lineChart.getAxisLeft();
+        yAxisLeft.setEnabled(true);
         yAxisLeft.setDrawGridLines(false); // Keep the grid lines
         yAxisLeft.enableAxisLineDashedLine(10f, 10f, 0f);
         yAxisLeft.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD)); // Bold labels
-        yAxisLeft.setGranularity(20f); // Set interval to 20
+        yAxisLeft.setGranularity(30f); // Set interval to 20
         yAxisLeft.setAxisMinimum(0f); // Set the minimum value
         yAxisLeft.setSpaceMin(0.3f);
 
@@ -176,7 +183,6 @@ public class StatisticFragment extends Fragment {
     }
     private LineData createChartData() {
         configureChartAppearance(lineChart);
-        ArrayList<Entry> entriesIncome = new ArrayList<>();
         ArrayList<Entry> entriesExpense = new ArrayList<>();
 
         Calendar calendar = Calendar.getInstance();
@@ -200,27 +206,28 @@ public class StatisticFragment extends Fragment {
                             String type = cursor.getString(typeIndex);
                             float amount = cursor.getFloat(amountIndex);
 
-                            if ("Income".equals(type)) {
-                                totalIncome += amount;
-                            } else if ("Expense".equals(type)) {
+                            if ("Expense".equals(type)) {
                                 totalExpense += amount;
                             }
                         }
                     } while (cursor.moveToNext());
                     cursor.close();
 
-                    entriesIncome.add(new Entry(6 - i, totalIncome));
                     entriesExpense.add(new Entry(6 - i, totalExpense));
                 }
                 calendar.add(Calendar.DAY_OF_YEAR, i);
             }
         }
-        LineDataSet dataSetIncome = new LineDataSet(entriesIncome, "Income");
-        dataSetIncome.setColor(Color.GREEN);
-        LineDataSet dataSetExpense = new LineDataSet(entriesExpense, "Expense");
-        dataSetExpense.setColor(Color.RED);
 
-        LineData lineData = new LineData(dataSetIncome, dataSetExpense);
+        LineDataSet dataSetExpense = new LineDataSet(entriesExpense, "Expense");
+        dataSetExpense.setColor(Color.RED); // 라인 색상 변경
+        dataSetExpense.setLineWidth(3f); // 라인 두께 변경
+        dataSetExpense.setCircleColor(Color.RED); // 포인트 색상 변경
+        dataSetExpense.setCircleRadius(5f); // 포인트 크기 변경
+        dataSetExpense.setDrawFilled(true); // 그라데이션 적용
+        dataSetExpense.setFillColor(Color.RED); // 그라데이션 색상
+
+        LineData lineData = new LineData(dataSetExpense);
         return lineData;
     }
 
