@@ -46,6 +46,7 @@ public class StatisticFragment extends Fragment {
     private DatabaseHelper databaseHelper;
     private String currentUser;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
+    private DayAxisValueFormatter dayAxisValueFormatter;
 
 
 
@@ -84,6 +85,9 @@ public class StatisticFragment extends Fragment {
 
         updateDateRange();
         prepareChartData(createChartData(), lineChart);
+        dayAxisValueFormatter = new DayAxisValueFormatter(currentWeekStart);
+        configureChartAppearance(lineChart);
+
 
 
         buttonPreviousWeek.setOnClickListener(new View.OnClickListener() {
@@ -156,7 +160,7 @@ public class StatisticFragment extends Fragment {
         xAxis.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD)); // Bold labels
         xAxis.setSpaceMin(0.3f);
         xAxis.setSpaceMax(0.3f);
-        xAxis.setValueFormatter(new DayAxisValueFormatter());
+        xAxis.setValueFormatter(dayAxisValueFormatter);
 
         // y axis design
         YAxis yAxisLeft = lineChart.getAxisLeft();
