@@ -45,7 +45,7 @@ public class HomeFragment extends Fragment {
 
         Log.d("HomeFragment", "조회 기간: " + startDate + " ~ " + endDate);
 
-        // 데이터베이스에서 수입과 지출 합산
+
         Pair<Double, Double> incomeExpense = databaseHelper.getMonthlyIncomeExpense(getLoggedInUsername(), startDate, endDate);
         updateIncomeExpenseUI(incomeExpense.first, incomeExpense.second);
     }

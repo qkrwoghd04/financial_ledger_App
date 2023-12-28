@@ -1,15 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_account"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     tools:context=".fragment.AccountFragment">
+
 
     <Button
         android:id="@+id/logoutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="LOGOUT"
-        android:layout_centerInParent="true" />
+        android:textColor="#000000" />
+
+    <Switch
+    android:id="@+id/switch_notification"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Enable Notifications"
+    android:layout_below="@+id/logoutButton"
+    android:layout_marginBottom="16dp"
+    android:minWidth="48dp"
+    android:minHeight="48dp"
+    android:padding="8dp"/>
+
+
+    <TextView
+        android:id="@+id/text_language_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/switch_notification"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="8dp"
+        android:text="Language Select:"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <Spinner
+    android:id="@+id/spinner_language"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/text_language_description"
+    android:layout_marginTop="12dp"
+    android:layout_marginBottom="24dp"
+    android:minWidth="48dp"
+    android:minHeight="48dp"
+    android:padding="8dp" />
+
+<!-- Add more settings components as needed -->
 
 </RelativeLayout>

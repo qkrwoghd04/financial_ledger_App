@@ -82,10 +82,9 @@ public class LoginActivity extends AppCompatActivity {
         iv_back.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                // 현재 액티비티에서 HomeActivity로 이동하는 인텐트 생성
                 Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
-                startActivity(intent);  // 인텐트를 사용하여 HomeActivity 시작
-                finish();  // 현재 액티비티 종료
+                startActivity(intent);
+                finish();
             }
         });
 
@@ -111,9 +110,5 @@ public class LoginActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    private String getLoggedInUsername() {
-        SharedPreferences sharedPreferences = getSharedPreferences("shared_pref", MODE_PRIVATE);
-        return sharedPreferences.getString("username", null);
-    }
 
 }

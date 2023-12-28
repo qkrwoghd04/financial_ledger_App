@@ -21,7 +21,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static  final String databaseName = "Balance Buddy.db";
 
     public DatabaseHelper(@Nullable Context context) {
-        super(context, databaseName, null, 10);
+        super(context, databaseName, null, 11);
     }
 
     @Override
